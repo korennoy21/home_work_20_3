@@ -7,3 +7,7 @@ def home(request):
 
 def contact(request):
     return render(request, 'catalog/contact.html')
+
+
+def product_detail(request):
+    return None
