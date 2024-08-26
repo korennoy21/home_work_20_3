@@ -59,4 +59,4 @@ class BlogListView(MyBaseFooter, ListView):
 
 
 
-
+#
