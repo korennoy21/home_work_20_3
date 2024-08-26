@@ -1,9 +1,8 @@
 from django.db import models
-from django.utils.text import slugify
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
     description = models.TextField()
 
     class Meta:
@@ -15,13 +14,13 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=200)
-    description = models.TextField()
-    image = models.ImageField(upload_to='products/')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=200, verbose_name='название')
+    description = models.TextField(verbose_name='описание')
+    image = models.ImageField(upload_to='products/', verbose_name='фото')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='категория')
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='цена')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='создан в')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='обновлен в')
 
     class Meta:
         verbose_name = 'Продукт'
@@ -31,19 +30,18 @@ class Product(models.Model):
         return self.name
 
 
-class BlogPost(models.Model):
-    title = models.CharField(max_length=200)
-    slug = models.CharField(max_length=200, unique=True, blank=True)
-    content = models.TextField()
-    preview_image = models.ImageField(upload_to='blog_previews/', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_published = models.BooleanField(default=False)
-    views_count = models.PositiveIntegerField(default=0)
+class People(models.Model):
+    name = models.CharField(max_length=200, verbose_name='название')
+    phone_number = models.IntegerField(verbose_name='телефон')
+    message = models.TextField(verbose_name='сообщение')
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
+    class Meta:
+        verbose_name = 'Клиент'
+        verbose_name_plural = 'Клиенты'
 
     def __str__(self):
-        return self.title
+        return self.name
+
+
+class BlogPost:
+    pass
