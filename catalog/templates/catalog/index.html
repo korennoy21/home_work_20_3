@@ -1,5 +1,5 @@
 {% extends 'catalog/base.html' %}
-{% load mymedia %}
+{% load my_media %}
 {% load static %}
 
 
@@ -17,7 +17,7 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ product.name }}</h5>
                         <p class="card-text">{{ product.description|truncatechars:100 }}</p>
-                        <p class="lead">Фото: <img src="{{ product.image| mymedia }}" class="img-thumbnail" alt="{{ product.name }}"> </p>
+                        <p class="lead">Фото: <img src="{{ product.image| my_media }}" class="img-thumbnail" alt="{{ product.name }}"> </p>
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="btn-group">
                                 <a href="{% url 'catalog:product_detail' product.pk %}"
