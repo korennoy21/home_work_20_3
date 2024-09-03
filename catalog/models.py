@@ -1,5 +1,7 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.text import slugify
+
 
 class BlogPost(models.Model):
     title = models.CharField(max_length=200, verbose_name='Заголовок')
@@ -21,7 +23,10 @@ class BlogPost(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+            while BlogPost.objects.filter(slug=self.slug).exists():
+                self.slug = f"{self.slug}-{BlogPost.objects.count()}"
         super().save(*args, **kwargs)
+
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
@@ -36,13 +41,17 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=200, verbose_name='название')
-    description = models.TextField(verbose_name='описание')
-    image = models.ImageField(upload_to='products/', verbose_name='фото')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='категория')
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='цена')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='создан в')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='обновлен в')
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    views = models.PositiveIntegerField(default=0)
+    is_published = models.BooleanField(default=False)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    is_aerfon = models.BooleanField(default=False)
+
 
     class Meta:
         verbose_name = 'Продукт'
@@ -54,7 +63,7 @@ class Product(models.Model):
 
 class People(models.Model):
     name = models.CharField(max_length=200, verbose_name='название')
-    phone_number = models.IntegerField(verbose_name='телефон')
+    phone_number = models.CharField(max_length=20, verbose_name='телефон')
     message = models.TextField(verbose_name='сообщение')
 
     class Meta:
@@ -64,6 +73,3 @@ class People(models.Model):
     def __str__(self):
         return self.name
 
-
-class BlogPost:
-    pass

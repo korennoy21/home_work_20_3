@@ -1,0 +1,36 @@
+{% extends 'catalog/base.html' %}
+{% load my_media %}
+{% block content %}
+<div class="col-6 mb-5">
+    <a class="p-2 btn btn-outline-primary" href="{% url 'catalog:products_create' %}">Создать продукт</a>
+</div>
+
+<div class="album py-5 bg-body-tertiary">
+        <div class="container">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+                {% for product in object_list %}
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <img src="{{ product.image | media_filter }}">
+                        <div class="card-body">
+                            <p class="card-text">{{ product.name }}</p>
+                            <p class="card-text">{{ product.description | truncatechars:100 }}</p>
+                            <p class="card-text">Категория: {{ product.category }}</p>
+                            <p class="card-text">Стоимость: {{ product.price }} руб.</p>
+                            <div class="btn-group">
+                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'catalog:product_detail' product.pk %}"
+                                role="button">Подробно</a>
+                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'catalog:product_update' product.pk %}"
+                                role="button">Изменить</a>
+                                <a class="btn btn-sm btn-outline-danger" href="{% url 'catalog:product_delete' product.pk %}"
+                                role="button">Удалить</a>
+                             </div>
+                        </div>
+                         <p class="card-footer"> Актуальная версия продукта: {{ product.active_version }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
