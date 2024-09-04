@@ -73,3 +73,15 @@ class People(models.Model):
     def __str__(self):
         return self.name
 
+class Version(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Продукт')
+    version_number = models.IntegerField(verbose_name='Версия')
+    name = models.CharField(max_length=200, verbose_name='Название версии')
+    is_active = models.BooleanField(default=True, verbose_name='Активна')
+
+    class Meta:
+        verbose_name = 'Версия продукта'
+        verbose_name_plural = 'Версии продукта'
+
+    def __str__(self):
+        return self.name
