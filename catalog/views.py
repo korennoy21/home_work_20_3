@@ -5,10 +5,12 @@ from django.views.generic import (
     DetailView, DeleteView,
     UpdateView
 )
+from parso.utils import Version
 
+from catalog.forms import VersionForm, CategoryForm, ProductForm
 from catalog.models import (
     Product, Category,
-    People,
+    People, Version
 )
 
 
@@ -44,6 +46,7 @@ class IndexView(MyBaseFooter, ListView):
 class ProductCreateView(MyBaseFooter, CreateView):
     """Страничка создания новой версии продукта"""
     model = Product
+    form_class = ProductForm
     success_url = reverse_lazy('catalog:index')
     template_name = 'catalog/product_form.html'
 
@@ -77,6 +80,7 @@ class ProductDetailView(MyBaseFooter, DetailView):
 class ProductUpdateView(MyBaseFooter, UpdateView):
     """Страничка редактирования продукта"""
     model = Product
+    form_class = ProductForm  # Укажите форму создания/редактирования продукта в форме ProductForm
     fields = ['name', 'description', 'price', 'image']  # Укажите все поля, которые должны быть в форме
     success_url = reverse_lazy('catalog:index')  # Обновите URL на страницу индекса
     template_name = 'catalog/product_form.html'
@@ -93,12 +97,6 @@ class CategoryDetailView(MyBaseFooter, DetailView):
     model = Category
 
 
-class CategoryDeleteView(MyBaseFooter, DeleteView):
-    """Страничка удаления категории"""
-    model = Category
-    success_url = reverse_lazy('catalog:index')
-    template_name = 'catalog/object_confirm_delete.html'
-
 
 class AerfonView(MyBaseFooter, ListView):
     """Страничка с акционными товарами"""
@@ -106,4 +104,59 @@ class AerfonView(MyBaseFooter, ListView):
 
     def get_queryset(self):
         return Product.objects.filter(is_aerfon=True)
+
+class CategoryCreateView(MyBaseFooter, CreateView):
+    """Страничка создания новой категории"""
+    model = Category
+    form_class = CategoryForm
+    success_url = reverse_lazy('catalog:index')
+    template_name = 'catalog/object_form.html'
+
+
+class CategoryUpdateView(MyBaseFooter, UpdateView):
+    """Страничка редактирования категории"""
+    model = Category
+    form_class = CategoryForm
+    success_url = reverse_lazy('catalog:index')
+    template_name = 'catalog/object_form.html'
+
+    def get_success_url(self):
+        return reverse('category_detail', kwargs={'pk': self.object.pk})
+
+class CategoryDeleteView(MyBaseFooter, DeleteView):
+    """Страничка удаления категории"""
+    model = Category
+    success_url = reverse_lazy('catalog:index')
+    template_name = 'catalog/object_confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse('catalog:index')
+
+
+class VersionCreateView(MyBaseFooter, CreateView):
+    """Страничка создания новой версии продукта"""
+    model = Version
+    form_class = VersionForm
+    fields = ['product', 'code', 'version']
+    success_url = reverse_lazy('catalog:index')
+    template_name = 'catalog/object_form.html'
+
+
+class VersionUpdateView(MyBaseFooter,Version, UpdateView):
+    """Страничка редактирования версии продукта"""
+    model = Version
+    form_class = VersionForm
+    success_url = reverse_lazy('catalog:index')
+    template_name = 'catalog/object_form.html'
+
+    def get_success_url(self):
+        return reverse('version_detail', kwargs={'pk': self.object.pk})
+
+class VersionDeleteView(MyBaseFooter, DeleteView):
+     """Страничка удаления версии продукта"""
+     model = Version
+     success_url = reverse_lazy('catalog:index')
+     template_name = 'catalog/object_confirm_delete.html'
+
+
 
