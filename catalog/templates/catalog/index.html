@@ -1,33 +1,25 @@
 {% extends 'catalog/base.html' %}
-{% load my_media %}
-{% load static %}
-
 
 {% block content %}
     <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
         <h1 class="display-4">Skystore</h1>
-        <p class="lead">Skystore - это отличный вариант хранения ваших плагинов и примеров кода, который вы бы хотели
-            продать</p>
+        <p class="lead">Skystore - это отличный вариант хранения ваших плагинов и примеров кода, которые вы бы хотели
+            продать.</p>
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'catalog:create' %}" class="btn btn-primary">Новый продукт</a>
+            <a href="{% url 'catalog:category_create' %}" class="btn btn-primary">Новая категория</a>
+            <a href="{% url 'user:logout' %}" class="btn btn-primary">Выход</a>
+
+        {% else %}
+            <a href="{% url 'user:login' %}" class="btn btn-primary">Войти</a>
+            <a href="{% url 'user:register' %}" class="btn btn-primary">Регистрация</a>
+        {% endif %}
     </div>
 
-    <div class="row d-flex">
+    <div class="row row-cols-1 row-cols-md-4 g-5">
         {% for product in product_list %}
-            <div class="col-md-3">
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text">{{ product.description|truncatechars:100 }}</p>
-                        <p class="lead">Фото: <img src="{{ product.image| my_media }}" class="img-thumbnail" alt="{{ product.name }}"> </p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="btn-group">
-                                <a href="{% url 'catalog:product_detail' product.pk %}"
-                                   class="btn btn-sm btn-outline-secondary">View</a>
-                            </div>
-                            <small class="text-muted">{{ product.purchase_price }}</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include 'catalog/includes/product_card.html' %}
         {% endfor %}
     </div>
 {% endblock %}

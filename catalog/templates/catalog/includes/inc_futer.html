@@ -7,8 +7,7 @@
         <h5>Категории</h5>
         <ul class="list-unstyled text-small">
             {% for category in category_list %}
-                <li><a class="text-muted" href="{% url 'catalog:category_info' category.pk %}">{{ category.name }}</a>
-                </li>
+                <li><a class="text-muted" href="{% url 'catalog:category_detail' category.pk %}">{{ category.name }}</a></li>
             {% endfor %}
         </ul>
     </div>
@@ -22,6 +21,11 @@
         <h5>О нас</h5>
         <ul class="list-unstyled text-small">
             <li><a class="text-muted" href="{% url 'catalog:contacts' %}">Контакты</a></li>
+        </ul>
+    </div>
+    <div class="col-6 col-md">
+        <ul class="list-unstyled text-small">
+            <li><a class="text-muted" href="{% url 'admin:index' %}">Админ</a></li>
         </ul>
     </div>
 </div>

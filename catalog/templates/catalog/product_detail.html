@@ -1,18 +1,56 @@
 {% extends 'catalog/base.html' %}
 {% load my_media %}
 {% block content %}
-<h1>Product Detail</h1>
-
-<p>Name: {{ product.name }}</p>
-<p>Description: {{ product.description }}</p>
-<p>Category: {{ product.category }}</p>
-<p>Price: {{ product.price }}</p>
-<img src="{{ product.image|my_media }}" class="img-thumbnail" alt="{{ product.name }}">
-<p>Views: {{ product.view_count }}</p>
-
-<div>
-    <a href="{% url 'catalog:product_update' product.pk %}">Update</a>
-    <a href="{% url 'catalog:product_delete' product.pk %}">Delete</a>
-</div>
-
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h1 class="display-4">{{ product.name }}</h1>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">Описание: {{ product.description }}</p>
+                        <div class="text-center mb-3">
+                            <img src="{{ product.image|my_media }}" class="img-thumbnail" alt="{{ product.name }}">
+                        </div>
+                        <p class="lead">Категория:
+                            <a href="{% url 'catalog:category_detail' product.category.pk %}">
+                                <span class="badge bg-primary">
+                                    {{ product.category }}
+                                </span>
+                            </a>
+                        </p>
+                        {% if version %}
+                            <p class="lead">Версия: {{ version.name }}</p>
+                            <p class="lead">Номер версии: {{ version.version_number }}</p>
+                        {% else %}
+                            <p class="lead">Первая версия</p>
+                        {% endif %}
+                        <p class="lead">Цена: <span class="text-success">{{ product.price }} Руб</span></p>
+                        <p class="lead">Создан: {{ product.created_at|date:"d M Y H:i"}}</p>
+                        <p class="lead">Обновлен: {{ product.updated_at|date:"d M Y H:i"}}</p>
+                        <a href="{% url 'catalog:update' product.pk %}" class="btn btn-outline-primary">
+                            Редактировать продукт
+                        </a>
+                        <a href="{% url 'catalog:delete' product.pk %}" class="btn btn-outline-danger">
+                            Удалить продукт
+                        </a>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'catalog:create_version' %}" class="btn btn-outline-primary">
+                            Создать версию продукта
+                        </a>
+                        {% if version %}
+                            <a href="{% url 'catalog:update_version' version.pk %}" class="btn btn-outline-primary">
+                                Редактировать версию
+                            </a>
+                            <a href="{% url 'catalog:delete_version' version.pk %}" class="btn btn-outline-danger">
+                                Удалить версию
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

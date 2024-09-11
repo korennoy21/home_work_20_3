@@ -1,56 +1,15 @@
-{% extends 'catalog/base.html' %}
-{% block content %}
-    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-        <h1 class="display-4">Контакты</h1>
-    </div>
-    <div class="row text-start">
-        <div class="col-lg-9 col-md-6 col-sm-12">
-            <div class="card mb-4 box-shadow">
-                <div class="card-body">
-                    <table class="table table-striped">
-                        <tr>
-                            <td class="w-25">Страна</td>
-                            <td>USA</td>
-                        </tr>
-                        <tr>
-                            <td class="w-25">ИНН</td>
-                            <td>91-1144442</td>
-                        </tr>
-                        <tr>
-                            <td class="w-25">Адрес</td>
-                            <td>Redmond,WA,98052-6399</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card mb-4 box-shadow">
-                <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Свяжитесь с нами</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post" class="form-floating">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="id_name">Имя</label>
-                            <input type="text" name="name" class="form-control" id="id_name" placeholder="Ваше имя"
-                                   required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_phone_number">Телефон</label>
-                            <input type="text" name="phone_number" class="form-control" id="id_phone_number"
-                                   placeholder="Контактный телефон" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_message">Сообщение</label>
-                            <textarea name="message" class="form-control" id="id_message" placeholder="Текст сообщения"
-                                      required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-lg btn-block btn-outline-primary">Отправить</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Product</title>
+</head>
+<body>
+<h1>Update Product</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save changes</button>
+</form>
+<a href="{% url 'catalog:product_detail' pk=object.pk %}">Back to product detail</a>
+</body>
+</html>

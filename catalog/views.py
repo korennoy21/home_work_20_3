@@ -1,9 +1,10 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy, reverse
 from django.views.generic import (
     ListView, CreateView,
     DetailView, DeleteView,
-    UpdateView
+    UpdateView,
 )
 from parso.utils import Version
 
@@ -14,7 +15,11 @@ from catalog.models import (
 )
 
 
-# Create your views here.
+class MyLoginRequiredMixin(LoginRequiredMixin):
+    login_url = reverse_lazy('user:login')
+    redirect_field_name ='redirect_to'
+    raise_exception = True
+
 
 
 class MyBaseFooter:
@@ -33,9 +38,16 @@ class ContactsView(MyBaseFooter, CreateView):
     """Отображение странички контактов и
     формы сбора контактов от пользователя с последующим сохранением в бд"""
     model = People
-    fields = ('name', 'phone_number', 'message')
+    form_class = ProductForm  # Исправлено: использована форма ProductForm
     success_url = reverse_lazy('catalog:contacts')
+    template_name = 'catalog/contacts.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+    def get_success_url(self):
+        return reverse('catalog:index')  # Исправлено: указан правильный URL-паттерн
 
 class IndexView(MyBaseFooter, ListView):
     """Главная каталога"""
@@ -43,16 +55,38 @@ class IndexView(MyBaseFooter, ListView):
     template_name = 'catalog/index.html'
 
 
-class ProductCreateView(MyBaseFooter, CreateView):
-    """Страничка создания новой версии продукта"""
+def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    # Получаем все продукты
+    products = context['products']
+
+    # Для каждого продукта находим активную версию
+    product_versions = {}
+    for product in products:
+        active_version = Version.objects.filter(product=product, is_active=True).first()
+        product_versions[product.id] = active_version
+
+    # Передаем активные версии в контекст
+    context['product_versions'] = product_versions
+    return context
+
+class ProductCreateView(LoginRequiredMixin,MyBaseFooter, CreateView):
+    """Страничка создания нового продукта"""
     model = Product
     form_class = ProductForm
     success_url = reverse_lazy('catalog:index')
-    template_name = 'catalog/product_form.html'
+    template_name = 'catalog/object_form.html'
 
+
+    def get_success_url(self):
+        return reverse('catalog:detail', args=[self.object.pk])
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 class ProductDeleteView(MyBaseFooter, DeleteView):
-    """Страничка удаления версии продукта"""
+    """Страничка удаления продукта"""
     model = Product
     success_url = reverse_lazy('catalog:index')
     template_name = 'catalog/object_confirm_delete.html'
@@ -62,40 +96,31 @@ def get_success_url(self):
     return reverse('index')
 
 
-class ProductDetailView(MyBaseFooter, DetailView):
-    """Отображение одного продукта"""
-    model = Product
 
-    def get_object(self):
-        return get_object_or_404(Product, pk=self.kwargs['pk'])
+class ProductDetailView(DetailView):
+    """Страничка деталей продукта"""
+    model = Product
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product = self.get_object()
-        product.views += 1
-        product.save()
+        context['version'] = Version.objects.filter(product=product, is_active=True).first()
         return context
-
 
 class ProductUpdateView(MyBaseFooter, UpdateView):
     """Страничка редактирования продукта"""
     model = Product
-    form_class = ProductForm  # Укажите форму создания/редактирования продукта в форме ProductForm
-    fields = ['name', 'description', 'price', 'image']  # Укажите все поля, которые должны быть в форме
-    success_url = reverse_lazy('catalog:index')  # Обновите URL на страницу индекса
-    template_name = 'catalog/product_form.html'
-
+    form_class = ProductForm
+    success_url = reverse_lazy('catalog:detail')
+    template_name = 'catalog/object_form.html'
 
     def get_success_url(self):
-        # Используйте правильное имя для URL-шаблона
-        return reverse('product_detail', kwargs={'pk': self.object.pk})
-
+        return reverse('catalog:detail', args=[self.object.pk])
 
 
 class CategoryDetailView(MyBaseFooter, DetailView):
     """Одна категория со всеми товарами в ней реализованно через класс MyBaseFooter"""
     model = Category
-
 
 
 class AerfonView(MyBaseFooter, ListView):
@@ -104,6 +129,7 @@ class AerfonView(MyBaseFooter, ListView):
 
     def get_queryset(self):
         return Product.objects.filter(is_aerfon=True)
+
 
 class CategoryCreateView(MyBaseFooter, CreateView):
     """Страничка создания новой категории"""
@@ -123,6 +149,7 @@ class CategoryUpdateView(MyBaseFooter, UpdateView):
     def get_success_url(self):
         return reverse('category_detail', kwargs={'pk': self.object.pk})
 
+
 class CategoryDeleteView(MyBaseFooter, DeleteView):
     """Страничка удаления категории"""
     model = Category
@@ -137,26 +164,28 @@ class VersionCreateView(MyBaseFooter, CreateView):
     """Страничка создания новой версии продукта"""
     model = Version
     form_class = VersionForm
-    fields = ['product', 'code', 'version']
     success_url = reverse_lazy('catalog:index')
     template_name = 'catalog/object_form.html'
 
 
-class VersionUpdateView(MyBaseFooter,Version, UpdateView):
-    """Страничка редактирования версии продукта"""
+class VersionUpdateView(MyBaseFooter, UpdateView):
     model = Version
     form_class = VersionForm
-    success_url = reverse_lazy('catalog:index')
+    success_url = reverse_lazy('catalog:detail')
     template_name = 'catalog/object_form.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        version = self.get_object()
+        context['product'] = version.product  # Добавляем продукт в контекст
+        return context
+
     def get_success_url(self):
-        return reverse('version_detail', kwargs={'pk': self.object.pk})
+        return reverse('catalog:detail', kwargs={'pk': self.object.product.pk})
+
 
 class VersionDeleteView(MyBaseFooter, DeleteView):
-     """Страничка удаления версии продукта"""
-     model = Version
-     success_url = reverse_lazy('catalog:index')
-     template_name = 'catalog/object_confirm_delete.html'
-
-
-
+    """Страничка удаления версии продукта"""
+    model = Version
+    success_url = reverse_lazy('catalog:index')
+    template_name = 'catalog/object_confirm_delete.html'
