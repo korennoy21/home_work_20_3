@@ -7,6 +7,7 @@ from django.views.generic import (
     UpdateView,
 )
 from parso.utils import Version
+from transformers import pipeline
 
 from catalog.forms import VersionForm, CategoryForm, ProductForm
 from catalog.models import (
@@ -49,7 +50,29 @@ class ContactsView(MyBaseFooter, CreateView):
     def get_success_url(self):
         return reverse('catalog:index')  # Исправлено: указан правильный URL-паттерн
 
+
+class ProductUpdateView(MyBaseFooter, UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'catalog/product_update.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        product = self.get_object()
+
+        # Allow editing if user is the owner or has the 'change_product' permission (moderator)
+        if request.user != product.owner and not request.user.has_perm('catalog.change_product'):
+            return self.handle_no_permission()
+        
+        return super().dispatch(request, *args, **kwargs)
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_owner'] = self.request.user == self.get_object().owner
+        context['can_edit'] = self.request.user.has_perm('catalog.change_product')
+        return context
+
 class IndexView(MyBaseFooter, ListView):
+    
     """Главная каталога"""
     model = Product
     template_name = 'catalog/index.html'
